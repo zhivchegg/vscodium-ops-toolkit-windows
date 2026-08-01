@@ -98,12 +98,31 @@ vim --version
 - Бинарные данные не вызывают зависания (`-K`)
 - Поиск без учёта регистра (`-i`)
 
+## Подключение внешнего Python и Java
+
+Python и Java не включены в сборку, чтобы не увеличивать размер. Чтобы VSCodium и MSYS2 Bash видели внешние portable-установки, запустите:
+
+```cmd
+VSCodium-portable/configure-runtime.cmd
+```
+
+Скрипт запросит:
+- путь к `python.exe` (например, `C:\tools\python-3.11\python.exe`)
+- папку Java home (например, `C:\tools\jdk-17`)
+
+Проверит, что указанные программы работают (`python --version`, `java -version`), и пропишет пути:
+- в `VSCodium-portable/data/user-data/User/settings.json` — для плагинов VSCodium
+- в `VSCodium-portable/msys64/etc/profile.d/runtime.sh` — для MSYS2 Bash
+
+После этого перезапустите VSCodium через `start-vscodium.cmd`.
+
 ## Настройки
 
 - Расширения: `VSCodium-portable/data/extensions/`
 - Пользовательские настройки: `VSCodium-portable/data/user-data/User/settings.json`
 - Конфигурация vim: `VSCodium-portable/msys64/etc/vimrc`
 - Bash-настройки: `VSCodium-portable/msys64/etc/skel/.bashrc`
+- Пути Python/Java: `VSCodium-portable/msys64/etc/profile.d/runtime.sh`
 
 ## Лицензия
 
