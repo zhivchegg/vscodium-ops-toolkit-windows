@@ -37,6 +37,11 @@
 | `mc` | Midnight Commander |
 | `tmux` | Терминальный мультиплексор |
 | `less` | Постраничный просмотр файлов и логов |
+| `shellcheck` | Линтинг bash-скриптов |
+| `psql` | Клиент PostgreSQL |
+| `kubectl` | Управление Kubernetes |
+| `helm` | Управление Helm-чартами |
+| `uv` | Python package manager |
 
 ### Плагины VSCodium
 
@@ -119,6 +124,43 @@ VSCodium-portable/configure-runtime.cmd
 - `VSCodium-portable/msys64/etc/profile.d/runtime.sh` — для MSYS2 Bash
 
 После сохранения перезапустите VSCodium через `start-vscodium.cmd`.
+
+### Требования к внешнему Python
+
+Подключаемый интерпретатор должен быть подготовлен на машине с интернетом и содержать следующие пакеты:
+
+```text
+debugpy
+PyYAML
+yamllint
+requests
+rich
+python-dateutil
+jinja2
+pytz
+click
+httpie
+```
+
+Минимальный набор:
+
+```text
+debugpy
+PyYAML
+yamllint
+```
+
+Установите их заранее:
+
+```bash
+python -m pip install debugpy PyYAML yamllint requests rich python-dateutil jinja2 pytz click httpie
+```
+
+После установки скопируйте всю папку с Python на целевую машину и укажите путь к `python.exe` в `configure-runtime.cmd`.
+
+### Требования к внешней Java
+
+Укажите папку `JAVA_HOME`, содержащую `bin\java.exe`. JDK должна быть перенесена на целевую машину полностью.
 
 ## Настройки
 
