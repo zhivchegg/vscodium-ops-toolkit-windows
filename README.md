@@ -106,15 +106,18 @@ Python и Java не включены в сборку, чтобы не увели
 VSCodium-portable/configure-runtime.cmd
 ```
 
-Скрипт запросит:
-- путь к `python.exe` (например, `C:\tools\python-3.11\python.exe`)
-- папку Java home (например, `C:\tools\jdk-17`)
+Откроется окно настройки с двумя независимыми секциями:
 
-Проверит, что указанные программы работают (`python --version`, `java -version`), и пропишет пути:
-- в `VSCodium-portable/data/user-data/User/settings.json` — для плагинов VSCodium
-- в `VSCodium-portable/msys64/etc/profile.d/runtime.sh` — для MSYS2 Bash
+- **Python**: выбор `python.exe` (кнопка *Browse...*), проверка (*Test*), сохранение (*Save*) и удаление (*Clear*)
+- **Java**: выбор папки `JAVA_HOME` (кнопка *Browse...*), проверка (*Test*), сохранение (*Save*) и удаление (*Clear*)
 
-После этого перезапустите VSCodium через `start-vscodium.cmd`.
+Текущая сохранённая настройка показывается в каждой секции. Python и Java настраиваются отдельно — можно включить только одно из них.
+
+Пути сохраняются в:
+- `VSCodium-portable/data/user-data/User/settings.json` — для плагинов VSCodium
+- `VSCodium-portable/msys64/etc/profile.d/runtime.sh` — для MSYS2 Bash
+
+После сохранения перезапустите VSCodium через `start-vscodium.cmd`.
 
 ## Настройки
 
