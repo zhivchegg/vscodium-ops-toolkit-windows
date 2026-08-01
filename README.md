@@ -1,129 +1,31 @@
 # VSCodium Ops Toolkit — Windows
 
-Портативная сборка **VSCodium** для Windows x64 с предустановленными плагинами и полноценным bash-окружением MSYS2 для задач сопровождения, отладки, чтения логов, написания скриптов и автоматизации рутины.
+Портативная сборка VSCodium с предустановленными плагинами и MSYS2 bash-окружением для задач сопровождения, отладки, анализа логов и автоматизации.
 
-## Состав
+## Быстрый старт
 
-### VSCodium
+1. Распакуйте архив в любую папку.
+2. Запустите `start-vscodium.cmd`.
+3. Дождитесь загрузки VSCodium.
+4. Откройте терминал — по умолчанию откроется MSYS2 Bash.
 
-- [VSCodium](https://vscodium.com/) 1.126.04524 (Windows x64 portable)
-- Portable-режим: все настройки, расширения и пользовательские данные хранятся в папке `data/` рядом с `VSCodium.exe`
+> **Важно:** запускайте именно `start-vscodium.cmd`, чтобы MSYS2 bash и все утилиты были доступны в терминале.
 
-### MSYS2 Bash-окружение
+## Настройка Python и Java
 
-Предустановленные пакеты:
+Python и Java не включены в сборку, чтобы не увеличивать размер. Подключите свои portable-версии через графическое окно:
 
-| Пакет | Назначение |
-|---|---|
-| `bash` | Shell |
-| `coreutils` | Базовые утилиты: cat, cut, sort, uniq, wc и др. |
-| `grep` | Поиск по тексту |
-| `sed` | Потоковая обработка текста |
-| `gawk` | awk |
-| `findutils` | find, xargs |
-| `diffutils` | diff, cmp |
-| `curl` | HTTP-запросы |
-| `wget` | Загрузка файлов |
-| `jq` | Обработка JSON |
-| `gron` | Преобразование JSON в плоский вид для grep |
-| `openbsd-netcat` | nc — работа с сокетами |
-| `openssh` | ssh, scp, sftp |
-| `rsync` | Синхронизация файлов |
-| `git` | Система контроля версий |
-| `tar`, `gzip`, `zip`, `unzip` | Архиваторы |
-| `p7zip` | 7zip архиватор |
-| `vim` | Редактор с подсветкой синтаксиса |
-| `nano` | Простой текстовый редактор |
-| `mc` | Midnight Commander |
-| `tmux` | Терминальный мультиплексор |
-| `less` | Постраничный просмотр файлов и логов |
-| `shellcheck` | Линтинг bash-скриптов |
-| `psql` | Клиент PostgreSQL |
-| `kubectl` | Управление Kubernetes |
-| `helm` | Управление Helm-чартами |
-| `uv` | Python package manager |
+1. Запустите `configure-runtime.cmd`.
+2. В окне видны две независимые секции: **Python** и **Java**.
+3. В каждой секции:
+   - показана текущая сохранённая настройка (или `not configured`)
+   - поле с путём — можно вставить вручную или выбрать через кнопку **Browse...**
+   - кнопка **Test** проверяет, что программа работает
+   - кнопка **Save** сохраняет путь в `settings.json` и `runtime.sh`
+   - кнопка **Clear** удаляет настройку
+4. Перезапустите VSCodium через `start-vscodium.cmd`.
 
-### Плагины VSCodium
-
-| Категория | Плагин |
-|---|---|
-| **Git** | GitLens, Git Graph, Git History |
-| **HTTP-запросы** | REST Client |
-| **Python** | Python (Microsoft) |
-| **JavaScript/TypeScript** | ESLint, Prettier |
-| **Java** | Language Support for Java by Red Hat, Debugger for Java |
-| **Bash** | Bash IDE, shellcheck |
-| **XML** | XML (Red Hat) |
-| **YAML** | YAML (Red Hat) |
-| **JSON** | Встроенная поддержка (валидация, форматирование, схемы) |
-| **Kubernetes** | Kubernetes Tools |
-| **Docker** | Docker |
-| **PostgreSQL** | PostgreSQL |
-| **Kafka** | Kafka for VS Code |
-| **Внешний вид** | Material Icon Theme, indent-rainbow |
-
-## Запуск
-
-1. Распакуйте архив `VSCodium-portable.zip`.
-2. Запустите `VSCodium-portable/start-vscodium.cmd`.
-3. Терминал по умолчанию откроется как **MSYS2 Bash**.
-
-> **Важно:** используйте именно `start-vscodium.cmd`, чтобы MSYS2 bash был доступен в терминале. Запуск `VSCodium.exe` напрямую не добавит MSYS2 в PATH.
-
-## Проверка после запуска
-
-В терминале VSCodium выполните:
-
-```bash
-bash --version
-curl --version
-jq --version
-git --version
-ssh -V
-nc -h
-vim --version
-```
-
-## Анализ логов
-
-Для работы с логами в терминале доступны:
-
-| Утилита | Пример использования |
-|---|---|
-| `less` | `less /var/log/app.log` — постраничный просмотр |
-| `tail -f` | `tail -f /var/log/app.log` — мониторинг в реальном времени |
-| `grep` | `grep -i error app.log` — поиск ошибок |
-| `jq` | `cat app.json | jq '.level'` — обработка JSON-логов |
-| `gron` | `cat app.json | gron | grep level` — поиск по JSON в плоском виде |
-| `tmux` | `tmux new -s logs` — несколько панелей для мониторинга |
-| `mc` | `mc` — файловый менеджер с просмотром логов |
-
-Настройки `less` оптимизированы для логов:
-- Цветовые коды отображаются корректно (`-R`)
-- Экран не очищается после выхода (`-X`)
-- Бинарные данные не вызывают зависания (`-K`)
-- Поиск без учёта регистра (`-i`)
-
-## Подключение внешнего Python и Java
-
-Python и Java не включены в сборку, чтобы не увеличивать размер. Чтобы VSCodium и MSYS2 Bash видели внешние portable-установки, запустите:
-
-```cmd
-VSCodium-portable/configure-runtime.cmd
-```
-
-Откроется окно настройки с двумя независимыми секциями:
-
-- **Python**: выбор `python.exe` (кнопка *Browse...*), проверка (*Test*), сохранение (*Save*) и удаление (*Clear*)
-- **Java**: выбор папки `JAVA_HOME` (кнопка *Browse...*), проверка (*Test*), сохранение (*Save*) и удаление (*Clear*)
-
-Текущая сохранённая настройка показывается в каждой секции. Python и Java настраиваются отдельно — можно включить только одно из них.
-
-Пути сохраняются в:
-- `VSCodium-portable/data/user-data/User/settings.json` — для плагинов VSCodium
-- `VSCodium-portable/msys64/etc/profile.d/runtime.sh` — для MSYS2 Bash
-
-После сохранения перезапустите VSCodium через `start-vscodium.cmd`.
+> Python и Java настраиваются отдельно — можно включить только одно из них.
 
 ### Требования к внешнему Python
 
@@ -150,7 +52,7 @@ PyYAML
 yamllint
 ```
 
-Установите их заранее:
+Установите заранее:
 
 ```bash
 python -m pip install debugpy PyYAML yamllint requests rich python-dateutil jinja2 pytz click httpie
@@ -162,25 +64,85 @@ python -m pip install debugpy PyYAML yamllint requests rich python-dateutil jinj
 
 Укажите папку `JAVA_HOME`, содержащую `bin\java.exe`. JDK должна быть перенесена на целевую машину полностью.
 
-## Настройки
+## Что включено в терминал
 
-- Расширения: `VSCodium-portable/data/extensions/`
-- Пользовательские настройки: `VSCodium-portable/data/user-data/User/settings.json`
-- Конфигурация vim: `VSCodium-portable/msys64/etc/vimrc`
-- Bash-настройки: `VSCodium-portable/msys64/etc/skel/.bashrc`
-- Пути Python/Java: `VSCodium-portable/msys64/etc/profile.d/runtime.sh`
+- `bash`, `grep`, `sed`, `awk`, `find`, `xargs`
+- `curl`, `wget`, `jq`, `gron`
+- `git`, `ssh`, `scp`, `rsync`
+- `nc` (netcat)
+- `kubectl`, `helm`
+- `psql`
+- `shellcheck`
+- `tar`, `gzip`, `zip`, `unzip`, `7z`
+- `vim`, `nano`, `mc`, `tmux`, `less`
 
-## Мануал
+## Плагины VSCodium
 
-Внутри архива находится папка `VSCodium-portable/manual/` с подробными справочниками, разделёнными на две группы:
+- Git: GitLens, Git Graph, Git History
+- HTTP: REST Client
+- Python: Python (Microsoft)
+- JS/TS: ESLint, Prettier
+- Java: Language Support for Java by Red Hat, Debugger for Java
+- Bash: Bash IDE, shellcheck
+- XML/YAML: Red Hat XML, Red Hat YAML
+- JSON: встроенная поддержка (валидация, форматирование, схемы)
+- Kubernetes, Docker
+- PostgreSQL, Kafka for VS Code
+- UI: Material Icon Theme, indent-rainbow
 
-- `manual/plugins/` — плагины VSCodium: REST Client, Python, Bash IDE, GitLens, PostgreSQL, Kubernetes, Docker, Kafka, XML/YAML, JSON.
+## Анализ логов
+
+Примеры команд в терминале:
+
+```bash
+# Просмотр лога
+less /var/log/app.log
+
+# Мониторинг в реальном времени
+tail -f /var/log/app.log
+
+# Поиск ошибок
+grep -i error app.log
+err < app.log
+
+# Обработка JSON-логов
+cat app.json | jq '.level'
+cat app.json | gron | grep level
+
+# Несколько логов одновременно
+tmux new -s logs
+```
+
+## Мануал по использованию
+
+Справочники находятся в папке `manual/` и разделены на две группы:
+
+- `manual/plugins/` — плагины VSCodium: REST Client, Python, Bash IDE, Git, PostgreSQL, Kubernetes, Docker, Kafka, XML/YAML, JSON.
 - `manual/tools/` — bash-утилиты: grep, sed, awk, jq, gron, curl, wget, ssh, tmux, less, mc, kubectl, uv.
 
-Содержимое папки `manual/` также дублируется в репозитории: [`manual/README.md`](manual/README.md).
+Откройте `manual/README.md` для навигации.
+
+## Структура папок
+
+```
+VSCodium-portable/
+  VSCodium.exe              # редактор
+  start-vscodium.cmd        # запуск с MSYS2 PATH
+  configure-runtime.cmd     # настройка Python/Java
+  VSCodium Ops Toolkit.lnk  # ярлык для запуска
+  manual/                   # справочники по плагинам и утилитам
+  data/                     # настройки и расширения
+    extensions/             # установленные плагины
+    user-data/              # пользовательские данные
+  msys64/                   # bash-окружение
+    usr/bin/bash.exe        # shell по умолчанию
+    etc/skel/.bashrc        # bash-настройки
+```
+
+## Оффлайн-использование
+
+Сборка не требует интернета для работы. Не перемещайте папку `msys64` отдельно от `VSCodium.exe`.
 
 ## Лицензия
 
-Сборка распространяется под лицензией MIT. Подробнее см. [LICENSE](LICENSE).
-
-Компоненты сборки (VSCodium, MSYS2, расширения) имеют собственные лицензии.
+Сборка распространяется под лицензией MIT. Компоненты (VSCodium, MSYS2, расширения) имеют собственные лицензии.
