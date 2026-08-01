@@ -36,6 +36,17 @@ Content-Type: application/x-www-form-urlencoded
 
 name=server-01&status=active
 
+### POST с файлом
+POST http://localhost:8080/api/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
+
+------WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="data.json"
+Content-Type: application/json
+
+< ./data.json
+------WebKitFormBoundary--
+
 ### PUT
 PUT http://localhost:8080/api/users/1
 Content-Type: application/json
@@ -83,6 +94,14 @@ Authorization: Bearer {{token}}
 
 Переключение окружения: `Ctrl+Shift+P` → `REST Client: Switch Environment`.
 
+## Глобальные настройки запроса
+
+```http
+# @timeout 30000
+# @contentType application/json
+GET http://{{host}}/slow-endpoint
+```
+
 ## Сохранение ответа
 
 Во вкладке результата нажмите иконку диска или правой кнопкой → `Save Response Body`.
@@ -98,6 +117,10 @@ GET http://{{host}}/metrics
 
 ### Логи приложения (если доступны)
 GET http://{{host}}/actuator/logfile
+
+### Проверка с таймаутом
+# @timeout 5000
+GET http://{{host}}/api/status
 ```
 
 ## Полезные советы
@@ -111,3 +134,4 @@ GET http://{{host}}/actuator/logfile
 - Не коммитьте файлы `.http` с реальными токенами.
 - REST Client не умеет повторять запросы автоматически — для нагрузочного теста используйте curl или wrk.
 - localhost в Windows может разрешаться в IPv6 — при проблемах пробуйте `127.0.0.1`.
+- Директивы `@timeout` и `@contentType` должны быть в начале запроса.

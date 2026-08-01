@@ -9,6 +9,7 @@
 3. Есть ли события типа Warning или ошибки?
 4. Не перезапускаются ли контейнеры (CrashLoopBackOff)?
 5. Достаточно ли ресурсов (CPU, память, место на диске)?
+6. Работают ли метрики (`kubectl top`)?
 
 ## Подключение к кластеру
 
@@ -42,14 +43,24 @@ kubectl cluster-info
 # Ноды
 kubectl get nodes
 
+# Подробная информация о нодах
+kubectl get nodes -o wide
+
 # Поды во всех неймспейсах
 kubectl get pods -A
 
 # События с сортировкой по времени
 kubectl get events --sort-by='.lastTimestamp' -A
 
+# Только Warning-события
+kubectl get events --field-selector type=Warning -A --sort-by='.lastTimestamp'
+
 # Поды с проблемами
 kubectl get pods -A --field-selector=status.phase!=Running
+
+# Метрики (если установлен metrics-server)
+kubectl top nodes
+kubectl top pods -A
 ```
 
 ## Диагностика пода
@@ -96,6 +107,70 @@ kubectl explain deployment.spec.strategy
 | `Pending` | Нет ресурсов или taint | `kubectl describe node` |
 | `OOMKilled` | Нехватка памяти | `kubectl describe pod` → Last State |
 | `CreateContainerConfigError` | Проблема с secret/configmap | `kubectl describe pod` |
+| `Evicted` | Нехватка диска или памяти на ноде | `kubectl describe pod` |
+
+## Helm
+
+Helm-функциональность встроена в плагин Kubernetes Tools. Поддерживаются:
+- подсветка Helm-шаблонов
+- автодополнение функций Helm/Sprig/Go templates
+- сниппеты для создания чартов
+- команды через палитру (`Ctrl+Shift+P` → `Helm: ...`)
+
+### Частые команды Helm
+
+```bash
+# Создать чарт
+helm create mychart
+
+# Установить релиз
+helm install my-release ./mychart
+
+# Обновить релиз
+helm upgrade my-release ./mychart
+
+# Установить или обновить
+helm upgrade --install my-release ./mychart
+
+# Просмотреть сгенерированные манифесты без установки
+helm template my-release ./mychart
+
+# Проверить чарт на ошибки
+helm lint ./mychart
+
+# Список релизов
+helm list -A
+
+# История релиза
+helm history my-release -n my-ns
+
+# Откат к предыдущей версии
+helm rollback my-release 1 -n my-ns
+
+# Удалить релиз
+helm uninstall my-release -n my-ns
+```
+
+### Диагностика Helm-релиза
+
+```bash
+# Почему релиз не обновился
+helm status my-release -n my-ns
+
+# Последние события подов релиза
+kubectl get events -n my-ns --field-selector reason=FailedMount
+
+# Сравнить установленный релиз с чартом
+helm get values my-release -n my-ns
+helm get manifest my-release -n my-ns | less
+```
+
+### Подводные камни Helm
+
+- `helm upgrade` не удаляет ресурсы, которые были в прошлой версии чарта, но убраны в новой.
+- `helm rollback` не откатывает изменения, внесённые вручную через `kubectl edit`.
+- Большие чарты с множеством шаблонов сложно отлаживать — используйте `helm template` для проверки.
+- Храните `values.yaml` для каждого окружения в Git.
 
 ## Проброс портов и логи нескольких подов
 
@@ -109,3 +184,11 @@ kubectl logs -l app=my-app -n default --tail 100 -f
 # Логи по метке и фильтр ошибок
 kubectl logs -l app=my-app -n default --tail 500 | err
 ```
+
+## Подводные камни
+
+- Всегда проверяйте текущий контекст перед операциями на production.
+- `kubectl apply` обновляет только указанные поля — удалённые поля в манифесте не удалятся в кластере автоматически.
+- `kubectl delete` необратим — для критичных ресурсов используйте `--dry-run=client`.
+- При пробросе порта соединение держится на вашей машине — если вы отключитесь, порт закроется.
+- `kubectl top` требует установленного metrics-server.

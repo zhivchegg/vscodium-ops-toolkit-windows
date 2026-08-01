@@ -8,6 +8,7 @@
 2. Установлены ли нужные пакеты?
 3. Скрипт запускается в правильном виртуальном окружении?
 4. Нет ли конфликтов зависимостей?
+5. Не закончилось ли место в кеше?
 
 ## Проверка версии
 
@@ -20,6 +21,9 @@ uv --version
 ```bash
 # Создать окружение в текущей папке
 uv venv .venv
+
+# Создать с конкретной версией Python
+uv venv --python 3.12 .venv
 
 # Активировать
 source .venv/bin/activate
@@ -44,6 +48,16 @@ uv pip install --upgrade requests
 uv pip freeze > requirements.txt
 ```
 
+## Компиляция зависимостей
+
+```bash
+# Создать lock-файл из requirements.in
+uv pip compile requirements.in -o requirements.txt
+
+# Установить строго по lock-файлу
+uv pip sync requirements.txt
+```
+
 ## Запуск скриптов
 
 ```bash
@@ -60,6 +74,16 @@ uv run script.py arg1 arg2
 uv run --with httpie http GET https://api.example.com
 ```
 
+## Установка инструментов
+
+```bash
+# Установить CLI-утилиту глобально
+uv tool install httpie
+
+# Запустить без установки
+uvx http GET https://api.example.com
+```
+
 ## Управление версиями Python
 
 ```bash
@@ -68,6 +92,15 @@ uv python install 3.12
 
 # Закрепить версию для проекта
 uv python pin 3.12
+
+# Список установленных версий
+uv python list
+```
+
+## Очистка кеша
+
+```bash
+uv cache clean
 ```
 
 ## Практический пример: быстрый скрипт для инцидента
@@ -88,3 +121,4 @@ python analyze_incident.py
 - `uv pip` работает только с активированным окружением или при указании `--python`.
 - Для production-скриптов фиксируйте версии пакетов в `requirements.txt`.
 - Если `uv` не видит установленный Python, укажите путь: `uv venv --python /path/to/python.exe`.
+- `uv tool install` устанавливает инструменты изолированно — они не попадают в текущее виртуальное окружение.

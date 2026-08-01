@@ -7,6 +7,7 @@
 1. Доступен ли URL?
 2. Нужно ли скачать большой файл с возможностью докачки?
 3. Требуется ли аутентификация?
+4. Нужно ли сохранить оригинальное имя файла из Content-Disposition?
 
 ## Основные примеры
 
@@ -17,11 +18,17 @@ wget https://example.com/file.zip
 # Сохранить под другим именем
 wget -O archive.zip https://example.com/file.zip
 
+# Сохранить с именем из Content-Disposition
+wget --content-disposition https://example.com/download?id=123
+
 # Скачать в указанную папку
 wget -P downloads https://example.com/file.zip
 
 # Тихий режим
 wget -q https://example.com/file.zip
+
+# С пользовательским User-Agent
+wget --user-agent="Mozilla/5.0" https://example.com/file.zip
 ```
 
 ## Продолжение и большие файлы
@@ -43,6 +50,12 @@ wget -b https://example.com/large.iso
 # Скачать сайт локально
 wget --mirror --convert-links --adjust-extension --page-requisites \
   --no-parent https://example.com/docs/
+
+# Исключить определённые файлы
+wget --mirror --no-parent --reject="*.pdf,*.zip" https://example.com/docs/
+
+# Следовать только по ссылкам внутри домена
+wget --mirror --no-parent --domains=example.com https://example.com/docs/
 ```
 
 ## Аутентификация
@@ -59,6 +72,9 @@ wget --header="Authorization: Bearer $TOKEN" https://example.com/private
 
 ```bash
 wget --spider https://example.com/health
+
+# С подробным выводом
+wget --spider -S https://example.com/health
 ```
 
 ## Практический пример: скачивание дампа логов
@@ -72,7 +88,8 @@ wget -c --header="Authorization: Bearer $TOKEN" \
 
 ## Подводные камни
 
-- По умолчанию wget сохраняет файл под именем из URL — используйте `-O`, если нужно другое имя.
+- По умолчанию wget сохраняет файл под именем из URL — используйте `-O` или `--content-disposition`, если нужно другое имя.
 - `wget --no-check-certificate` отключает проверку TLS — только для отладки.
 - При зеркалировании следите за robots.txt — `--mirror` учитывает его по умолчанию.
 - В MSYS2 пути с обратными слешами в `-P` могут работать некорректно — используйте прямые слеши.
+- `wget -b` пишет лог в `wget-log` в текущей директории — не забудьте его проверить.

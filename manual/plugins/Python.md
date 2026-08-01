@@ -8,6 +8,7 @@
 2. Работает ли интерпретатор в терминале?
 3. Установлены ли нужные пакеты?
 4. Нет ли конфликтов между системным Python и виртуальным окружением?
+5. Правильно ли настроен `PYTHONPATH`?
 
 ## Настройка интерпретатора
 
@@ -41,6 +42,25 @@ python script.py arg1 arg2
 
 ```bash
 python -m pdb script.py
+```
+
+## launch.json для отладки
+
+Создайте `.vscode/launch.json`:
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        }
+    ]
+}
 ```
 
 ## Форматирование и линтинг
@@ -108,3 +128,5 @@ for e in errors[-10:]:
 - `python` может вести на Windows-версию, а не MSYS2 — проверяйте `which python`.
 - Без виртуального окружения пакеты устанавливаются глобально и могут конфликтовать.
 - Пути в Windows и MSYS2 различаются: `C:/Users/...` vs `/c/Users/...`.
+- Если VSCodium не видит интерпретатор, проверьте `settings.json` → `python.defaultInterpreterPath`.
+- `ModuleNotFoundError` обычно означает, что пакет установлен в другом окружении.

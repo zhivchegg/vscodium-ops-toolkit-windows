@@ -62,6 +62,9 @@ kubectl get events --sort-by='.lastTimestamp' -A
 
 # Все ресурсы в неймспейсе
 kubectl get all -n my-ns
+
+# Подробная информация о ноде в формате YAML
+kubectl get node node-name -o yaml
 ```
 
 ## Диагностика пода
@@ -96,7 +99,7 @@ kubectl logs -l app=my-app -n default --tail 100 -f
 kubectl logs -l app=my-app -n default --tail 500 | err
 ```
 
-## Ресурсы
+## Ресурсы и деплойменты
 
 ```bash
 # Применить манифест
@@ -105,11 +108,26 @@ kubectl apply -f deployment.yaml
 # Проверка без применения
 kubectl apply --dry-run=client -f deployment.yaml
 
+# Разница между манифестом и кластером
+kubectl diff -f deployment.yaml
+
 # Удалить ресурс
 kubectl delete -f deployment.yaml
 
 # Объяснение полей
 kubectl explain deployment.spec.strategy
+
+# Статус rollout
+kubectl rollout status deployment/my-app
+
+# История rollout
+kubectl rollout history deployment/my-app
+
+# Откат deployment
+kubectl rollout undo deployment/my-app
+
+# Перезапуск deployment (без изменения манифеста)
+kubectl rollout restart deployment/my-app
 ```
 
 ## Типовые проблемы
@@ -128,3 +146,4 @@ kubectl explain deployment.spec.strategy
 - `kubectl apply` обновляет только указанные поля — удалённые поля в манифесте не удалятся в кластере автоматически.
 - `kubectl delete` необратим — для критичных ресурсов используйте `--dry-run=client`.
 - При пробросе порта соединение держится на вашей машине — если вы отключитесь, порт закроется.
+- `kubectl rollout restart` создаёт новые поды с тем же манифестом — полезно для перечитывания конфигов/секретов.

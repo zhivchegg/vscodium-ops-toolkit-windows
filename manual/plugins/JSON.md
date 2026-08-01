@@ -42,6 +42,9 @@ jq '.' app.json > app-formatted.json
 
 # Минификация
 jq -c '.' app.json > app-minified.json
+
+# Сортировка ключей
+jq -S '.' app.json > app-sorted.json
 ```
 
 ## Преобразование в YAML
@@ -111,6 +114,9 @@ curl -s http://localhost:8080/health | jq '.status'
 
 # Найти ошибки в JSON-логах
 jq 'select(.level == "ERROR")' app.ndjson
+
+# Подсчитать события по уровню
+jq -s 'group_by(.level) | map({level: .[0].level, count: length})' app.ndjson
 ```
 
 ## Подводные камни
@@ -119,3 +125,4 @@ jq 'select(.level == "ERROR")' app.ndjson
 - Числа в JSON ограничены 53 битами точности. Для больших чисел используйте строки.
 - `undefined` — это не JSON, используйте `null`.
 - При копировании из Windows-консоли могут появиться лишние BOM — сохраняйте файлы как UTF-8.
+- Для сортировки и слияния JSON-файлов удобнее использовать `jq`, чем ручное редактирование.

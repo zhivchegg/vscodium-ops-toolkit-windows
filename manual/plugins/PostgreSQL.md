@@ -8,6 +8,7 @@
 2. Правильны ли логин/пароль и имя базы?
 3. Нет ли блокировок и долгих запросов?
 4. Сколько места занимают таблицы?
+5. Работает ли репликация?
 
 ## Создание подключения
 
@@ -66,6 +67,12 @@ FROM pg_stat_activity
 WHERE state != 'idle'
 ORDER BY query_start;
 
+-- Долгие запросы (больше 5 минут)
+SELECT pid, usename, query_start, query
+FROM pg_stat_activity
+WHERE state = 'active'
+  AND now() - query_start > interval '5 minutes';
+
 -- Блокировки
 SELECT blocked_locks.pid AS blocked_pid,
        blocking_locks.pid AS blocking_pid,
@@ -84,11 +91,20 @@ FROM pg_catalog.pg_statio_user_tables
 ORDER BY pg_total_relation_size(relid) DESC
 LIMIT 20;
 
+-- Размер баз данных
+SELECT datname,
+       pg_size_pretty(pg_database_size(datname)) AS size
+FROM pg_database
+ORDER BY pg_database_size(datname) DESC;
+
 -- Медленные запросы (если включён pg_stat_statements)
 SELECT query, calls, total_exec_time, mean_exec_time
 FROM pg_stat_statements
 ORDER BY total_exec_time DESC
 LIMIT 10;
+
+-- Состояние репликации
+SELECT * FROM pg_stat_replication;
 ```
 
 ## Проверка связности
@@ -101,9 +117,40 @@ nc -zv db-host 5432
 openssl s_client -connect db-host:5432 -starttls postgres </dev/null
 ```
 
+## Резервное копирование и восстановление
+
+```bash
+# Дамп базы
+pg_dump -h db-host -U postgres -d mydb > mydb.sql
+
+# Дамп в сжатом виде
+pg_dump -h db-host -U postgres -d mydb | gzip > mydb.sql.gz
+
+# Восстановление
+psql -h db-host -U postgres -d mydb < mydb.sql
+
+# Только схема
+pg_dump -h db-host -U postgres -d mydb --schema-only > mydb-schema.sql
+```
+
+## Обслуживание
+
+```sql
+-- Сбор статистики для планировщика
+ANALYZE;
+
+-- Очистка и освобождение места
+VACUUM FULL my_table;  -- блокирует таблицу!
+
+-- Обычная очистка без блокировки
+VACUUM my_table;
+```
+
 ## Подводные камни
 
 - `LIMIT` обязателен для больших таблиц.
 - Для production включайте SSL/TLS.
 - Не храните пароли в запросах, которые попадают в лог.
 - Long-running query может заблокировать DDL-операции.
+- `VACUUM FULL` блокирует таблицу — запускайте в окно обслуживания.
+- `pg_stat_statements` требует расширения: `CREATE EXTENSION pg_stat_statements;`.

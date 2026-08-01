@@ -8,6 +8,7 @@
 2. Есть ли топики с аномальным lag у consumer groups?
 3. Не переполнены ли диски брокеров?
 4. Равномерно ли распределены партиции?
+5. Нет ли offline-реплик?
 
 ## Подключение к кластеру
 
@@ -35,6 +36,9 @@ kafka-topics.sh --bootstrap-server localhost:9092 --describe --topic events
 # Lag consumer groups
 kafka-consumer-groups.sh --bootstrap-server localhost:9092 --all-groups --describe
 
+# Описание группы
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group events-consumer
+
 # Отправить тестовое сообщение
 echo '{"event":"test"}' | kafka-console-producer.sh --broker-list localhost:9092 --topic events
 
@@ -44,7 +48,7 @@ kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic events --fro
 
 > **Примечание:** пути к скриптам `kafka-*` должны быть в PATH. В данной сборке они не включены — используйте клиентский инструментарий вашего Kafka-дистрибутива.
 
-## Диагностика lag
+## Диагностика lag и перегрузки
 
 ```bash
 # Группы с задержкой
@@ -57,11 +61,26 @@ kafka-consumer-groups.sh --bootstrap-server localhost:9092 --all-groups --descri
 
 Если LAG растёт:
 - проверьте скорость обработки consumer'ов
-- увеличьте количество consumer'ов в группе
+- увеличьте количество consumer'ов в группе (не больше числа партиций)
 - проверьте, нет ли ошибок в логах consumer'ов
+
+## Проверка состояния брокеров
+
+```bash
+# Проверка доступности брокера
+nc -zv kafka-broker 9092
+
+# Проверка TLS
+openssl s_client -connect kafka-broker:9093 -servername kafka-broker </dev/null
+
+# DNS
+nslookup kafka-broker
+```
 
 ## Подводные камни
 
 - `__consumer_offsets` — системный топик, не удаляйте его.
 - Producer может работать, а consumer отставать — отслеживайте LAG.
 - Сообщения с ключом всегда попадают в одну и ту же партицию.
+- Число consumer'ов в группе не может превышать число партиций — лишние consumer'ы будут простаивать.
+- Если брокер падает с `No space left on device`, операции записи останавливаются.

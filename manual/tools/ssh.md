@@ -25,6 +25,29 @@ ssh user@server.example.com "df -h"
 ssh user@server.example.com 'bash -s' < script.sh
 ```
 
+## Конфигурация ~/.ssh/config
+
+Упростите частые подключения:
+
+```bash
+Host prod-web
+    HostName 192.168.1.10
+    User ops
+    Port 2222
+    IdentityFile ~/.ssh/id_ed25519
+
+Host prod-db
+    HostName db.example.com
+    User postgres
+    ProxyJump bastion
+```
+
+После этого можно подключаться так:
+
+```bash
+ssh prod-web
+```
+
 ## Управление ключами
 
 ```bash
@@ -51,6 +74,9 @@ ssh -L 8080:localhost:80 user@server.example.com
 # Доступ к внутреннему сервису через bastion
 ssh -L 8080:internal-service:80 user@bastion.example.com
 
+# Или через ProxyJump
+ssh -J user@bastion.example.com user@internal-server
+
 # Удалённый туннель: порт на сервере -> ваш локальный порт
 ssh -R 9090:localhost:3000 user@server.example.com
 
@@ -69,6 +95,9 @@ scp -r ./logs user@server.example.com:/var/log/
 
 # С указанием порта
 scp -P 2222 file.log user@server.example.com:/var/log/
+
+# rsync через SSH
+rsync -avz --progress ./logs/ user@server.example.com:/var/log/
 ```
 
 ## Диагностика подключения
@@ -82,6 +111,9 @@ ssh -v user@server.example.com
 
 # Ещё более подробно
 ssh -vvv user@server.example.com
+
+# Проверить, какой ключ используется
+ssh -v user@server.example.com 2>&1 | grep "identity file"
 ```
 
 ## Практический пример: сбор логов с нескольких серверов
@@ -98,6 +130,7 @@ done
 ## Подводные камни
 
 - `~/.ssh/config` упрощает подключения — настройте алиасы для частых хостов.
-- Права на ключи должны быть `600` (`chmod 600 ~/.ssh/id_ed25519`).
+- Права на ключи должны быть `600` (`chmod 600 ~/.ssh/id_ed25519`), на `~/.ssh` — `700`.
 - Если подключение зависает, проверьте DNS и MTU.
 - `ssh -R` требует `GatewayPorts` на сервере для внешнего доступа.
+- `ProxyJump` удобнее цепочки туннелей — используйте `ssh -J` или `ProxyJump` в config.

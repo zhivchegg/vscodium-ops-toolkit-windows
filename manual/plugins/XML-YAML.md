@@ -30,6 +30,10 @@
         xsi:noNamespaceSchemaLocation="config.xsd">
 ```
 
+### XPath
+
+`Ctrl+Shift+P` → `XML: Evaluate XPath` — выполнить XPath-запрос к открытому XML.
+
 ## YAML (Red Hat)
 
 Плагин Red Hat YAML предоставляет:
@@ -65,11 +69,27 @@ spec:
 ]
 ```
 
+### YAML anchors и aliases
+
+```yaml
+defaults: &defaults
+  adapter: postgres
+  host: localhost
+
+development:
+  <<: *defaults
+  database: dev_db
+```
+
 ### Проверка YAML в терминале
 
 ```bash
 # Проверить синтаксис через Python
 python -c "import yaml; yaml.safe_load(open('file.yaml'))"
+
+# Установить и использовать yamllint
+pip install yamllint
+yamllint file.yaml
 
 # Проверить Kubernetes-манифест
 kubectl apply --dry-run=client -f file.yaml
@@ -81,3 +101,4 @@ kubectl apply --dry-run=client -f file.yaml
 - Отступы в YAML критичны: обычно 2 пробела.
 - Спецсимволы в строках (`:`, `{`, `}`, `[`, `]`, `,`, `&`, `*`, `!`, `|`, `>`, `'`, `"`, `#`, `%`, `@`, `` ` ``) могут требовать кавычек.
 - XML без BOM и с правильной кодировкой меньше вызывает проблем при парсинге.
+- YAML anchors (`&` и `*`) упрощают повторяющиеся блоки, но усложняют чтение для новичков.

@@ -15,6 +15,12 @@
 # Красивый вывод
 jq '.' app.json
 
+# Компактный вывод
+jq -c '.' app.json
+
+# Raw-вывод (без кавычек для строк)
+jq -r '.name' app.json
+
 # Извлечь поле
 jq '.name' app.json
 
@@ -42,6 +48,20 @@ jq '.items[] | select(.code > 400)' app.json
 
 # Комбинировать условия
 jq '.items[] | select(.level == "ERROR" and .code >= 500)' app.json
+
+# Игнорировать ошибки при обращении к полю
+jq '.items[] | .metadata?.name' app.json
+```
+
+## Переменные и аргументы
+
+```bash
+# Передать переменную из shell
+LEVEL="ERROR"
+jq --arg level "$LEVEL" '.items[] | select(.level == $level)' app.json
+
+# Передать число
+jq --argjson code 500 '.items[] | select(.code >= $code)' app.json
 ```
 
 ## Преобразования
@@ -58,6 +78,12 @@ jq '[.items[].name]' app.json
 
 # Группировка
 jq 'group_by(.level) | map({level: .[0].level, count: length})' app.json
+
+# Обновить значение
+jq '.status = "OK"' app.json
+
+# Удалить поле
+jq 'del(.password, .token)' app.json
 ```
 
 ## Работа с NDJSON (JSON-логи)
@@ -81,6 +107,9 @@ jq 'select(.level == "ERROR") | {timestamp, message, service}' app.ndjson
 
 # Топ-10 самых частых сообщений об ошибках
 jq -s 'map(select(.level == "ERROR")) | group_by(.message) | map({message: .[0].message, count: length}) | sort_by(-.count) | .[:10]' app.ndjson
+
+# Маскировать чувствительные поля перед отправкой
+jq 'walk(if type == "object" then del(.password, .token) else . end)' app.json
 ```
 
 ## Подводные камни
@@ -89,3 +118,4 @@ jq -s 'map(select(.level == "ERROR")) | group_by(.message) | map({message: .[0].
 - При фильтрации массива `.items[] | select(...)` выводит поток объектов, для массива оберните в `[...]`.
 - Для больших файлов используйте `--stream` или `jq -c`.
 - jq строго требует валидный JSON: одиночные кавычки, trailing commas не допускаются.
+- `jq '.'` загружает весь файл в память — для огромных файлов используйте `--stream`.
