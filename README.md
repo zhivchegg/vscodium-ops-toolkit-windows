@@ -25,6 +25,7 @@
 | `curl` | HTTP-запросы |
 | `wget` | Загрузка файлов |
 | `jq` | Обработка JSON |
+| `gron` | Преобразование JSON в плоский вид для grep |
 | `openbsd-netcat` | nc — работа с сокетами |
 | `openssh` | ssh, scp, sftp |
 | `rsync` | Синхронизация файлов |
@@ -87,6 +88,7 @@ vim --version
 | `tail -f` | `tail -f /var/log/app.log` — мониторинг в реальном времени |
 | `grep` | `grep -i error app.log` — поиск ошибок |
 | `jq` | `cat app.json | jq '.level'` — обработка JSON-логов |
+| `gron` | `cat app.json | gron | grep level` — поиск по JSON в плоском виде |
 | `tmux` | `tmux new -s logs` — несколько панелей для мониторинга |
 | `mc` | `mc` — файловый менеджер с просмотром логов |
 
