@@ -1,4 +1,4 @@
-#requires -Version 5.1
+﻿#requires -Version 5.1
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
@@ -38,6 +38,12 @@ function Get-CurrentPythonPath {
     return $null
 }
 
+function Get-CurrentPythonHome {
+    $pyExe = Get-CurrentPythonPath
+    if (-not $pyExe) { return $null }
+    return Split-Path -Parent $pyExe
+}
+
 function Get-CurrentJavaPath {
     if (Test-Path $settingsFile) {
         try {
@@ -75,9 +81,10 @@ function ConvertTo-MsysPath {
 
 function Test-Python {
     param([string]$Path)
-    if (-not $Path -or -not (Test-Path $Path)) { return "Not found: $Path" }
+    $exe = Join-Path $Path 'python.exe'
+    if (-not $Path -or -not (Test-Path $exe)) { return "Not found: $exe" }
     try {
-        $out = & $Path --version 2>&1
+        $out = & $exe --version 2>&1
         return "OK: $out"
     } catch {
         return "ERROR: $_"
@@ -104,22 +111,23 @@ function Get-RuntimeShLines {
 
 function Save-Python {
     param([string]$Path)
-    if (-not (Test-Path $Path)) { throw "File not found: $Path" }
-    $ver = & $Path --version 2>&1
+    $exePath = Join-Path $Path 'python.exe'
+    if (-not (Test-Path $exePath)) { throw "python.exe not found in $Path" }
+    $ver = & $exePath --version 2>&1
 
     # Update settings.json
     $json = @{}
     if (Test-Path $settingsFile) {
         $json = Get-Content $settingsFile -Raw | ConvertFrom-Json
     }
-    $json | Add-Member -NotePropertyName 'python.defaultInterpreterPath' -NotePropertyValue (ConvertTo-RelativePath $Path) -Force
+    $json | Add-Member -NotePropertyName 'python.defaultInterpreterPath' -NotePropertyValue (ConvertTo-RelativePath $exePath) -Force
     Write-TextFile $settingsFile ($json | ConvertTo-Json -Depth 10)
 
     # Update runtime.sh
     if (-not (Test-Path $profileDir)) { New-Item -ItemType Directory -Path $profileDir -Force | Out-Null }
-    $msysPath = ConvertTo-MsysPath $Path
-    $dirPath = ConvertTo-MsysPath (Split-Path -Parent $Path)
-    $scriptsPath = ConvertTo-MsysPath (Join-Path (Split-Path -Parent $Path) 'Scripts')
+    $msysPath = ConvertTo-MsysPath $exePath
+    $dirPath = ConvertTo-MsysPath $Path
+    $scriptsPath = ConvertTo-MsysPath (Join-Path $Path 'Scripts')
     if (-not (Test-Path $scriptsPath)) {
         $scriptsPath = "$dirPath/bin"
     }
@@ -239,20 +247,20 @@ $lblPyTitle.Font = New-Object System.Drawing.Font('Microsoft Sans Serif', 10, [S
 $form.Controls.Add($lblPyTitle)
 $y += 28
 
-$currentPy = Get-CurrentPythonPath
+$currentPy = Get-CurrentPythonHome
 $lblPyCurrent = New-Label "Current: $(if ($currentPy) { $currentPy } else { 'not configured' })" 20 $y 560 $height
 $lblPyCurrent.ForeColor = if ($currentPy) { [System.Drawing.Color]::DarkGreen } else { [System.Drawing.Color]::Gray }
 $form.Controls.Add($lblPyCurrent)
 $y += 28
 
-$lblPyHint = New-Label 'Укажите путь к файлу python.exe в папке с переносимым Python. Подготовьте Python на машине с интернетом, установите пакеты, скопируйте всю папку сюда, затем выберите python.exe.' 20 $y 560 32
+$lblPyHint = New-Label 'Выберите папку Python, внутри которой находится python.exe. Подготовьте Python на машине с интернетом, установите пакеты, скопируйте всю папку сюда.' 20 $y 560 32
 $lblPyHint.Font = New-Object System.Drawing.Font('Microsoft Sans Serif', 8, [System.Drawing.FontStyle]::Italic)
 $lblPyHint.ForeColor = [System.Drawing.Color]::DimGray
 $lblPyHint.AutoSize = $false
 $form.Controls.Add($lblPyHint)
 $y += 34
 
-$lblPy = New-Label 'python.exe:' 20 $y $labelWidth $height
+$lblPy = New-Label 'Python home:' 20 $y $labelWidth $height
 $form.Controls.Add($lblPy)
 
 $txtPy = New-TextBox (20 + $labelWidth) $y $textWidth $height
@@ -261,11 +269,10 @@ $form.Controls.Add($txtPy)
 
 $btnPyBrowse = New-Button 'Browse...' (20 + $labelWidth + $textWidth + $gap) $y $btnWidth $height
 $btnPyBrowse.Add_Click({
-    $dlg = New-Object System.Windows.Forms.OpenFileDialog
-    $dlg.Title = 'Select python.exe'
-    $dlg.Filter = 'python.exe|python.exe|All files (*.*)|*.*'
-    $dlg.InitialDirectory = 'C:\'
-    if ($dlg.ShowDialog() -eq 'OK') { $txtPy.Text = $dlg.FileName }
+    $dlg = New-Object System.Windows.Forms.FolderBrowserDialog
+    $dlg.Description = 'Выберите папку Python, внутри которой находится python.exe'
+    $dlg.RootFolder = 'MyComputer'
+    if ($dlg.ShowDialog() -eq 'OK') { $txtPy.Text = $dlg.SelectedPath }
 })
 $form.Controls.Add($btnPyBrowse)
 $y += 34
@@ -283,7 +290,7 @@ $btnPySave.Add_Click({
         Save-Python $txtPy.Text
         $lblPyCurrent.Text = "Current: $($txtPy.Text)"
         $lblPyCurrent.ForeColor = [System.Drawing.Color]::DarkGreen
-        [System.Windows.Forms.MessageBox]::Show('Python path saved.', 'Saved')
+        [System.Windows.Forms.MessageBox]::Show('Папка Python сохранена.', 'Saved')
     } catch {
         [System.Windows.Forms.MessageBox]::Show($_.Exception.Message, 'Error', 'OK', 'Error')
     }
@@ -296,7 +303,7 @@ $btnPyClear.Add_Click({
     $txtPy.Text = ''
     $lblPyCurrent.Text = 'Current: not configured'
     $lblPyCurrent.ForeColor = [System.Drawing.Color]::Gray
-    [System.Windows.Forms.MessageBox]::Show('Python configuration cleared.', 'Cleared')
+    [System.Windows.Forms.MessageBox]::Show('Настройка Python удалена.', 'Cleared')
 })
 $form.Controls.Add($btnPyClear)
 $y += 26
@@ -328,7 +335,7 @@ $lblJavaCurrent.ForeColor = if ($currentJava) { [System.Drawing.Color]::DarkGree
 $form.Controls.Add($lblJavaCurrent)
 $y += 28
 
-$lblJavaHint = New-Label 'Скопируйте папку portable JDK сюда, затем выберите папку, внутри которой находится bin\java.exe (это JAVA_HOME).' 20 $y 560 32
+$lblJavaHint = New-Label 'Скопируйте папку portable JDK сюда, затем выберите папку, внутри которой находится bin/java.exe (это JAVA_HOME).' 20 $y 560 32
 $lblJavaHint.Font = New-Object System.Drawing.Font('Microsoft Sans Serif', 8, [System.Drawing.FontStyle]::Italic)
 $lblJavaHint.ForeColor = [System.Drawing.Color]::DimGray
 $lblJavaHint.AutoSize = $false
