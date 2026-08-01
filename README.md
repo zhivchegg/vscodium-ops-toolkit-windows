@@ -127,6 +127,15 @@ VSCodium-portable/configure-runtime.cmd
 - Bash-настройки: `VSCodium-portable/msys64/etc/skel/.bashrc`
 - Пути Python/Java: `VSCodium-portable/msys64/etc/profile.d/runtime.sh`
 
+## Мануал
+
+Внутри архива находится папка `VSCodium-portable/manual/` с подробными справочниками:
+
+- Примеры использования плагинов: REST Client, Python, Bash IDE, GitLens, PostgreSQL, Kubernetes, Docker, Kafka, XML/YAML.
+- Справочник по bash-утилитам: grep, sed, awk, jq, gron, curl, wget, ssh, tmux, less, mc, kubectl, uv.
+
+Содержимое папки `manual/` также дублируется в репозитории: [`manual/README.md`](manual/README.md).
+
 ## Лицензия
 
 Сборка распространяется под лицензией MIT. Подробнее см. [LICENSE](LICENSE).
