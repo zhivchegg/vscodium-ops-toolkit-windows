@@ -50,6 +50,7 @@
 | **Bash** | Bash IDE, shellcheck |
 | **XML** | XML (Red Hat) |
 | **YAML** | YAML (Red Hat) |
+| **JSON** | Встроенная поддержка (валидация, форматирование, схемы) |
 | **Kubernetes** | Kubernetes Tools |
 | **Docker** | Docker |
 | **PostgreSQL** | PostgreSQL |
@@ -129,10 +130,10 @@ VSCodium-portable/configure-runtime.cmd
 
 ## Мануал
 
-Внутри архива находится папка `VSCodium-portable/manual/` с подробными справочниками:
+Внутри архива находится папка `VSCodium-portable/manual/` с подробными справочниками, разделёнными на две группы:
 
-- Примеры использования плагинов: REST Client, Python, Bash IDE, GitLens, PostgreSQL, Kubernetes, Docker, Kafka, XML/YAML.
-- Справочник по bash-утилитам: grep, sed, awk, jq, gron, curl, wget, ssh, tmux, less, mc, kubectl, uv.
+- `manual/plugins/` — плагины VSCodium: REST Client, Python, Bash IDE, GitLens, PostgreSQL, Kubernetes, Docker, Kafka, XML/YAML, JSON.
+- `manual/tools/` — bash-утилиты: grep, sed, awk, jq, gron, curl, wget, ssh, tmux, less, mc, kubectl, uv.
 
 Содержимое папки `manual/` также дублируется в репозитории: [`manual/README.md`](manual/README.md).
 

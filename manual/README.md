@@ -1,31 +1,36 @@
 # Мануалы VSCodium Ops Toolkit
 
-Каждый файл содержит подробное описание одного плагина или одной утилиты с примерами.
+Справочники разделены по темам: плагины редактора и инструменты командной строки.
 
 ## Плагины VSCodium
 
-- [REST Client](REST-Client.md) — HTTP-запросы из редактора
-- [Python](Python.md) — настройка интерпретатора и запуск скриптов
-- [Bash IDE](Bash-IDE.md) — автодополнение и shellcheck
-- [Git](Git.md) — GitLens, Git Graph, Git History
-- [PostgreSQL](PostgreSQL.md) — подключение к базам и выполнение запросов
-- [Kubernetes](Kubernetes.md) — kubectl и работа с кластером
-- [Docker](Docker.md) — docker-команды
-- [Kafka](Kafka.md) — Kafka for VS Code и базовые проверки
-- [XML-YAML](XML-YAML.md) — работа с XML и YAML
+| Файл | Описание |
+|---|---|
+| [Bash IDE](plugins/Bash-IDE.md) | Автодополнение bash, shellcheck, запуск скриптов |
+| [Docker](plugins/Docker.md) | Работа с контейнерами и образами |
+| [Git](plugins/Git.md) | GitLens, Git Graph, Git History |
+| [JSON](plugins/JSON.md) | Встроенная поддержка JSON: валидация, форматирование, схемы |
+| [Kafka](plugins/Kafka.md) | Просмотр топиков и сообщений |
+| [Kubernetes](plugins/Kubernetes.md) | Работа с манифестами и кластером |
+| [PostgreSQL](plugins/PostgreSQL.md) | Подключение к базам и выполнение запросов |
+| [Python](plugins/Python.md) | Настройка интерпретатора и запуск скриптов |
+| [REST Client](plugins/REST-Client.md) | HTTP-запросы из редактора |
+| [XML-YAML](plugins/XML-YAML.md) | Работа с XML и YAML |
 
-## Bash-утилиты
+## Инструменты командной строки
 
-- [grep](grep.md) — поиск по тексту
-- [sed](sed.md) — потоковая обработка текста
-- [awk](awk.md) — обработка столбцов
-- [jq](jq.md) — обработка JSON
-- [gron](gron.md) — плоское представление JSON
-- [curl](curl.md) — HTTP-запросы
-- [wget](wget.md) — загрузка файлов
-- [ssh](ssh.md) — удалённые подключения
-- [tmux](tmux.md) — терминальный мультиплексор
-- [less](less.md) — просмотр логов
-- [mc](mc.md) — Midnight Commander
-- [kubectl](kubectl.md) — управление Kubernetes
-- [uv](uv.md) — быстрый Python package manager
+| Файл | Описание |
+|---|---|
+| [awk](tools/awk.md) | Обработка столбцов и подсчёты |
+| [curl](tools/curl.md) | HTTP-запросы и отладка |
+| [grep](tools/grep.md) | Поиск по тексту и логам |
+| [gron](tools/gron.md) | Плоское представление JSON для grep/diff |
+| [jq](tools/jq.md) | Обработка JSON |
+| [kubectl](tools/kubectl.md) | Управление Kubernetes-кластером |
+| [less](tools/less.md) | Просмотр логов с поиском |
+| [mc](tools/mc.md) | Файловый менеджер в терминале |
+| [sed](tools/sed.md) | Потоковая обработка текста |
+| [ssh](tools/ssh.md) | Удалённые подключения и туннели |
+| [tmux](tools/tmux.md) | Терминальный мультиплексор |
+| [uv](tools/uv.md) | Python package manager |
+| [wget](tools/wget.md) | Загрузка файлов |
