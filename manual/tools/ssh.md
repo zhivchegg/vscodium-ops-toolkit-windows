@@ -50,19 +50,69 @@ ssh prod-web
 
 ## Управление ключами
 
+### Генерация нового ключа для Git
+
 ```bash
-# Сгенерировать ключ
-ssh-keygen -t ed25519 -C "ops@example.com"
+# Рекомендуемый тип ключа — ed25519
+ssh-keygen -t ed25519 -C "your.email@example.com" -f ~/.ssh/id_ed25519 -N ""
 
-# Скопировать публичный ключ на сервер
-ssh-copy-id user@server.example.com
+# Права доступа
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_ed25519
+chmod 644 ~/.ssh/id_ed25519.pub
 
-# Использовать конкретный ключ
+# Вывести публичный ключ, чтобы добавить на GitHub/GitLab/etc.
+cat ~/.ssh/id_ed25519.pub
+```
+
+Публичный ключ скопируй и добавь в настройки Git-сервера:  
+**GitHub**: Settings → SSH and GPG keys → New SSH key.  
+**GitLab**: Preferences → SSH Keys.
+
+### Перенос ключей с основной Windows-машины в MSYS2
+
+Портативная сборка живёт в папке `VSCodium-portable/`, а MSYS2 использует своё домашнее окружение внутри `VSCodium-portable/msys64/home/<имя_пользователя>/`. В этой сборке и VSCodium, и терминал используют **один и тот же Git и SSH из MSYS2**, поэтому ключи достаточно хранить только в MSYS2-профиле.
+
+Чтобы работать с Git по SSH, перенеси ключи вручную:
+
+1. Открой проводник Windows и найди папку с ключами:
+   ```
+   C:\Users\<твой_пользователь>\.ssh
+   ```
+   Обычно там лежат файлы: `id_ed25519`, `id_ed25519.pub`, `id_rsa`, `id_rsa.pub`, `config`, `known_hosts`.
+
+2. Скопируй нужные файлы в папку MSYS2:
+   ```
+   VSCodium-portable\msys64\home\<имя_пользователя>\.ssh\
+   ```
+   Если папки `.ssh` нет — создай её.
+
+3. Открой терминал MSYS2 (через `msys2-bash.cmd` или ярлык `MSYS2 Bash.lnk`, созданный `create-shortcuts.cmd`) и выставь права:
+   ```bash
+   chmod 700 ~/.ssh
+   chmod 600 ~/.ssh/id_ed25519
+   chmod 644 ~/.ssh/id_ed25519.pub
+   chmod 644 ~/.ssh/config 2>/dev/null
+   chmod 644 ~/.ssh/known_hosts 2>/dev/null
+   ```
+
+4. Проверь подключение к GitHub:
+   ```bash
+   ssh -T git@github.com
+   ```
+   Должен появиться ответ: `Hi username! You've successfully authenticated...`
+
+### Использовать конкретный ключ
+
+```bash
 ssh -i ~/.ssh/id_ed25519 user@server.example.com
+```
 
-# Запустить ssh-agent
- eval $(ssh-agent -s)
- ssh-add ~/.ssh/id_ed25519
+### Запустить ssh-agent
+
+```bash
+eval $(ssh-agent -s)
+ssh-add ~/.ssh/id_ed25519
 ```
 
 ## Туннели и проброс портов

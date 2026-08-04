@@ -24,7 +24,6 @@
 | [awk](tools/awk.md) | Обработка столбцов и подсчёты |
 | [curl](tools/curl.md) | HTTP-запросы и отладка |
 | [grep](tools/grep.md) | Поиск по тексту и логам |
-| [gron](tools/gron.md) | Плоское представление JSON для grep/diff |
 | [jq](tools/jq.md) | Обработка JSON |
 | [kubectl](tools/kubectl.md) | Управление Kubernetes-кластером |
 | [less](tools/less.md) | Просмотр логов с поиском |

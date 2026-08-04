@@ -9,7 +9,8 @@
 3. Дождитесь загрузки VSCodium.
 4. Откройте терминал — по умолчанию откроется MSYS2 Bash.
 
-> **Важно:** запускайте именно `start-vscodium.cmd`, чтобы MSYS2 bash и все утилиты были доступны в терминале.
+> **Важно:** запускайте именно `start-vscodium.cmd`, чтобы MSYS2 bash и все утилиты были доступны в терминале.  
+> VSCodium и терминал используют общий Git и SSH из MSYS2, поэтому ключи для Git хранятся в `msys64/home/<имя_пользователя>/.ssh` (см. `manual/tools/ssh.md`).
 
 ## Настройка Python и Java
 
@@ -67,18 +68,17 @@ python -m pip install debugpy PyYAML yamllint requests rich python-dateutil jinj
 ## Что включено в терминал
 
 - `bash`, `grep`, `sed`, `awk`, `find`, `xargs`
-- `curl`, `wget`, `jq`, `gron`
+- `curl`, `wget`, `jq`
 - `git`, `ssh`, `scp`, `rsync`
 - `nc` (netcat)
-- `kubectl`, `helm`
-- `psql`
-- `shellcheck`
+- `kubectl`, `helm`, `uv`, `psql`, `shellcheck`
+- все внутренние пути резолвятся относительно папки `VSCodium-portable/` — можно распаковывать куда угодно
 - `tar`, `gzip`, `zip`, `unzip`, `7z`
 - `vim`, `nano`, `mc`, `tmux`, `less`
 
 ## Плагины VSCodium
 
-- Git: GitLens, Git Graph, Git History
+- Git: Git Graph, Git History
 - HTTP: REST Client
 - Python: Python (Microsoft)
 - JS/TS: ESLint, Prettier
@@ -107,7 +107,7 @@ err < app.log
 
 # Обработка JSON-логов
 cat app.json | jq '.level'
-cat app.json | gron | grep level
+cat app.json | jq 'paths' | grep level
 
 # Несколько логов одновременно
 tmux new -s logs
@@ -118,7 +118,7 @@ tmux new -s logs
 Справочники находятся в папке `manual/` и разделены на две группы:
 
 - `manual/plugins/` — плагины VSCodium: REST Client, Python, Bash IDE, Git, PostgreSQL, Kubernetes, Docker, Kafka, XML/YAML, JSON.
-- `manual/tools/` — bash-утилиты: grep, sed, awk, jq, gron, curl, wget, ssh, tmux, less, mc, kubectl, uv.
+- `manual/tools/` — bash-утилиты: grep, sed, awk, jq, curl, wget, ssh, tmux, less, mc, kubectl, uv.
 
 Откройте `manual/README.md` для навигации.
 
@@ -126,18 +126,32 @@ tmux new -s logs
 
 ```
 VSCodium-portable/
-  VSCodium.exe              # редактор
-  start-vscodium.cmd        # запуск с MSYS2 PATH
-  configure-runtime.cmd     # настройка Python/Java
-  VSCodium Ops Toolkit.lnk  # ярлык для запуска
-  manual/                   # справочники по плагинам и утилитам
-  data/                     # настройки и расширения
-    extensions/             # установленные плагины
-    user-data/              # пользовательские данные
-  msys64/                   # bash-окружение
-    usr/bin/bash.exe        # shell по умолчанию
-    etc/skel/.bashrc        # bash-настройки
+  VSCodium.exe                       # редактор
+  start-vscodium.cmd                 # запуск VSCodium с MSYS2 PATH
+  msys2-bash.cmd                     # запуск MSYS2 Bash
+  configure-runtime.cmd              # настройка Python/Java
+  create-shortcuts.cmd               # создание ярлыков
+  create-shortcuts.ps1               # вспомогательный скрипт для create-shortcuts.cmd
+  manual/                            # справочники по плагинам и утилитам
+  data/                              # настройки и расширения
+    extensions/                      # установленные плагины
+    user-data/                       # пользовательские данные
+  msys64/                            # bash-окружение
+    usr/bin/bash.exe                 # shell по умолчанию
+    etc/skel/.bashrc                 # bash-настройки
 ```
+
+## Ярлыки
+
+Запустите `create-shortcuts.cmd`. Он создаёт в текущей папке (или на рабочем столе — по выбору) ярлыки:
+
+- `VSCodium Ops Toolkit.lnk` — запуск VSCodium
+- `MSYS2 Bash.lnk` — запуск MSYS2 Bash в отдельном окне
+- `Configure Runtime.lnk` — настройка Python/Java
+
+Ярлыки можно копировать/перетаскивать в удобное место. Windows не позволяет закреплять на панели задач ярлыки, которые указывают на `.cmd` файлы. Если папку `VSCodium-portable` переместят, запустите `create-shortcuts.cmd` заново, чтобы обновить пути в ярлыках.
+
+> Для быстрого запуска можно поместить `.lnk` на рабочий стол. Меню Пуск тоже распознаёт ярлыки, если их положить в `%APPDATA%\Microsoft\Windows\Start Menu\Programs\`.
 
 ## Оффлайн-использование
 
