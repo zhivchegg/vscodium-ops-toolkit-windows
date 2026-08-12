@@ -2,9 +2,16 @@ const vscode = require('vscode');
 const path = require('path');
 const fs = require('fs');
 
+const SHOWN_KEY = 'vscodium-ops-toolkit-welcome.shown';
+
 function activate(context) {
     const showManual = async () => {
         try {
+            // Show only once per VSCodium installation/profile.
+            if (context.globalState.get(SHOWN_KEY, false)) {
+                return;
+            }
+
             // Don't show if a project folder is already open.
             if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
                 return;
@@ -20,6 +27,7 @@ function activate(context) {
 
             const uri = vscode.Uri.file(manualPath);
             await vscode.commands.executeCommand('markdown.showPreview', uri);
+            await context.globalState.update(SHOWN_KEY, true);
         } catch (err) {
             console.error('[vscodium-ops-toolkit-welcome]', err);
         }
