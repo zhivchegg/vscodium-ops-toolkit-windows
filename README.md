@@ -115,7 +115,9 @@ tmux new -s logs
 
 ## Мануал по использованию
 
-Справочники находятся в папке `manual/` и разделены на две группы:
+Сначала откройте **[manual/getting-started.md](manual/getting-started.md)** — полное руководство по запуску и использованию сборки.
+
+Справочники также разделены на две группы:
 
 - `manual/plugins/` — плагины VSCodium: REST Client, Python, Bash IDE, Git, PostgreSQL, Kubernetes, Docker, Kafka, XML/YAML, JSON.
 - `manual/tools/` — bash-утилиты: grep, sed, awk, jq, curl, wget, ssh, tmux, less, mc, kubectl, uv.
