@@ -11,6 +11,14 @@
 3. Откройте папку и запустите **`start-vscodium.cmd`**.
 4. После загрузки редактора откройте терминал: `` Ctrl + ` `` или **Terminal → New Terminal**.
 
+## Если вы перенесли сборку
+
+После перемещения папки `VSCodium-portable` в другое место:
+
+- запустите **`configure-runtime.cmd`** заново и укажите папки Python/Java;
+- запустите **`create-shortcuts.cmd`** заново, чтобы обновить ярлыки;
+- перенесите личные файлы: `~/.ssh`, `~/.kube`, `~/.bash_aliases`, `config/pg_service.conf`, `config/pgpass`.
+
 ## Почему нельзя просто кликать `VSCodium.exe`
 
 Если запустить `VSCodium.exe` напрямую, редактор откроется, но встроенный терминал **не увидит MSYS2-утилиты**: `git`, `kubectl`, `helm`, `psql`, `ssh`, `jq` и другие.
