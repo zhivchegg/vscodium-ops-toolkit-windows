@@ -115,7 +115,7 @@ tmux new -s logs
 
 ## Мануал по использованию
 
-Сначала откройте **[manual/getting-started.md](manual/getting-started.md)** — полное руководство по запуску и использованию сборки.
+Сначала откройте **[manual/getting-started.md](manual/getting-started.md)** — короткая инструкция по правильному запуску сборки.
 
 Справочники также разделены на две группы:
 
