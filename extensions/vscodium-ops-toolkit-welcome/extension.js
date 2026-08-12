@@ -10,9 +10,8 @@ function activate(context) {
                 return;
             }
 
-            // The extension lives at VSCodium-portable/data/extensions/<name>.
-            // Two levels up is the bundle root.
-            const bundleRoot = path.dirname(path.dirname(context.extensionPath));
+            // process.execPath points to the VSCodium executable at the bundle root.
+            const bundleRoot = path.dirname(process.execPath);
             const manualPath = path.join(bundleRoot, 'manual', 'getting-started.md');
 
             if (!fs.existsSync(manualPath)) {
