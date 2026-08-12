@@ -8,6 +8,8 @@
 _vscodium_msys_root=$(cd "/" 2>/dev/null && pwd -W 2>/dev/null || cygpath -m "/")
 _vscodium_toolkit_root="${_vscodium_msys_root%/msys64}"
 
+PATH="/usr/local/bin:/usr/bin:/bin:/mingw64/bin:${PATH}"
+
 # Ensure toolkit binaries shipped in msys64/usr/local/bin are on PATH.
 # /etc/profile already adds /usr/local/bin, but keep this explicit for clarity.
 if [ -d "/usr/local/bin" ]; then
