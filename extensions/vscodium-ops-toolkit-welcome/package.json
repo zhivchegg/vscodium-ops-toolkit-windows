@@ -1,0 +1,19 @@
+{
+  "name": "vscodium-ops-toolkit-welcome",
+  "displayName": "VSCodium Ops Toolkit Welcome",
+  "description": "Opens the getting-started manual on launch when no folder is open.",
+  "version": "1.0.0",
+  "publisher": "local",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {}
+}
