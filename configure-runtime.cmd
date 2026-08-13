@@ -10,4 +10,5 @@ if not exist "%PS_FILE%" (
     exit /b 1
 )
 
-start "" powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_FILE%"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%setup-home.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%PS_FILE%"

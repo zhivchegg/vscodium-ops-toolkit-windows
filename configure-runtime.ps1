@@ -54,6 +54,22 @@ function Get-CurrentJavaPath {
     return $null
 }
 
+function Get-CurrentGitPath {
+    if (Test-Path $settingsFile) {
+        try {
+            $json = Get-Content $settingsFile -Raw | ConvertFrom-Json
+            $gitPath = $json.'git.path'
+            if ($gitPath) {
+                $resolved = Resolve-SettingsPath $gitPath
+                if ($resolved) {
+                    return Split-Path -Parent $resolved
+                }
+            }
+        } catch {}
+    }
+    return $null
+}
+
 function ConvertTo-RelativePath {
     param([string]$FullPath)
     if (-not $FullPath) { return $null }
@@ -96,6 +112,23 @@ function Test-Java {
     if (-not $Path -or -not (Test-Path "$Path\bin\java.exe")) { return "Not found: $Path\bin\java.exe" }
     try {
         $out = & "$Path\bin\java.exe" -version 2>&1 | Select-Object -First 1
+        return "OK: $out"
+    } catch {
+        return "ERROR: $_"
+    }
+}
+
+function Test-Git {
+    param([string]$Path)
+    if (-not $Path) { return "Path is empty" }
+    $binPath = Join-Path $Path 'bin\git.exe'
+    $cmdPath = Join-Path $Path 'cmd\git.exe'
+    $exePath = $null
+    if (Test-Path $binPath) { $exePath = $binPath }
+    elseif (Test-Path $cmdPath) { $exePath = $cmdPath }
+    else { return "Not found: $Path\bin\git.exe or $Path\cmd\git.exe" }
+    try {
+        $out = & $exePath --version 2>&1 | Select-Object -First 1
         return "OK: $out"
     } catch {
         return "ERROR: $_"
@@ -169,6 +202,51 @@ function Save-Java {
     Write-LinesFile $runtimeSh $lines
 }
 
+function Save-Git {
+    param([string]$Path)
+    $binPath = Join-Path $Path 'bin\git.exe'
+    $cmdPath = Join-Path $Path 'cmd\git.exe'
+    $exePath = $null
+    if (Test-Path $binPath) { $exePath = $binPath }
+    elseif (Test-Path $cmdPath) { $exePath = $cmdPath }
+    else { throw "git.exe not found in $Path\bin or $Path\cmd" }
+    $ver = & $exePath --version 2>&1 | Select-Object -First 1
+
+    # Update settings.json
+    $json = @{}
+    if (Test-Path $settingsFile) {
+        $json = Get-Content $settingsFile -Raw | ConvertFrom-Json
+    }
+    $json | Add-Member -NotePropertyName 'git.path' -NotePropertyValue (ConvertTo-RelativePath $exePath) -Force
+    Write-TextFile $settingsFile ($json | ConvertTo-Json -Depth 10)
+
+    # Update runtime.sh - prepend Git folders to PATH so system Git overrides MSYS2 git
+    if (-not (Test-Path $profileDir)) { New-Item -ItemType Directory -Path $profileDir -Force | Out-Null }
+    $msysBin = ConvertTo-MsysPath (Join-Path $Path 'bin')
+    $msysCmd = ConvertTo-MsysPath (Join-Path $Path 'cmd')
+    $lines = (Get-RuntimeShLines | Where-Object { $_ -notmatch '^export (GIT_.*|PATH=.*\b(Git|git)\b)' -and $_ -notmatch '^# Git' }) -as [string[]]
+    if (-not $lines) { $lines = @() }
+    $lines += "# Git (configured $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss'))"
+    $lines += "export PATH=`"$msysBin`":`"$msysCmd`":`$PATH"
+    Write-LinesFile $runtimeSh $lines
+
+}
+
+function Clear-Git {
+    # Remove from settings.json
+    if (Test-Path $settingsFile) {
+        $json = Get-Content $settingsFile -Raw | ConvertFrom-Json
+        $json.PSObject.Properties.Remove('git.path')
+        Write-TextFile $settingsFile ($json | ConvertTo-Json -Depth 10)
+    }
+    # Remove from runtime.sh
+    if (Test-Path $runtimeSh) {
+        $lines = (Get-RuntimeShLines | Where-Object { $_ -notmatch '^export (GIT_.*|PATH=.*\b(Git|git)\b)' -and $_ -notmatch '^# Git' }) -as [string[]]
+        if (-not $lines) { $lines = @() }
+        Write-LinesFile $runtimeSh $lines
+    }
+}
+
 function Clear-Python {
     # Remove from settings.json
     if (Test-Path $settingsFile) {
@@ -202,7 +280,7 @@ function Clear-Java {
 # Build form
 $form = New-Object System.Windows.Forms.Form
 $form.Text = 'VSCodium Ops Toolkit - Runtime Configuration'
-$form.Size = New-Object System.Drawing.Size(620, 500)
+$form.Size = New-Object System.Drawing.Size(620, 700)
 $form.StartPosition = 'CenterScreen'
 $form.FormBorderStyle = 'FixedDialog'
 $form.MaximizeBox = $false
@@ -321,6 +399,81 @@ $sep1.BorderStyle = 'Fixed3D'
 $sep1.Location = New-Object System.Drawing.Point(20, $y)
 $sep1.Size = New-Object System.Drawing.Size(560, 2)
 $form.Controls.Add($sep1)
+$y += 20
+
+# === Git section ===
+$currentGit = Get-CurrentGitPath
+$lblGitTitle = New-Label 'Git' 20 $y 100 $height
+$lblGitTitle.Font = New-Object System.Drawing.Font('Microsoft Sans Serif', 10, [System.Drawing.FontStyle]::Bold)
+$form.Controls.Add($lblGitTitle)
+$y += 28
+
+$lblGitCurrent = New-Label "Current: $(if ($currentGit) { $currentGit } else { 'not configured (will use built-in MSYS2 Git)' })" 20 $y 560 $height
+$lblGitCurrent.ForeColor = if ($currentGit) { [System.Drawing.Color]::DarkGreen } else { [System.Drawing.Color]::Gray }
+$form.Controls.Add($lblGitCurrent)
+$y += 28
+
+$lblGitHint = New-Label 'Выберите папку Git, внутри которой находятся bin\git.exe и cmd\git.exe. Обычно это C:\Program Files\Git.' 20 $y 560 32
+$lblGitHint.Font = New-Object System.Drawing.Font('Microsoft Sans Serif', 8, [System.Drawing.FontStyle]::Italic)
+$lblGitHint.ForeColor = [System.Drawing.Color]::DimGray
+$lblGitHint.AutoSize = $false
+$form.Controls.Add($lblGitHint)
+$y += 34
+
+$lblGit = New-Label 'Git home:' 20 $y $labelWidth $height
+$form.Controls.Add($lblGit)
+
+$txtGit = New-TextBox (20 + $labelWidth) $y $textWidth $height
+$txtGit.Text = if ($currentGit) { $currentGit } else { '' }
+$form.Controls.Add($txtGit)
+
+$btnGitBrowse = New-Button 'Browse...' (20 + $labelWidth + $textWidth + $gap) $y $btnWidth $height
+$btnGitBrowse.Add_Click({
+    $dlg = New-Object System.Windows.Forms.FolderBrowserDialog
+    $dlg.Description = 'Select Git home folder (containing bin\git.exe or cmd\git.exe)'
+    $dlg.RootFolder = 'MyComputer'
+    if ($dlg.ShowDialog() -eq 'OK') { $txtGit.Text = $dlg.SelectedPath }
+})
+$form.Controls.Add($btnGitBrowse)
+$y += 34
+
+$btnGitTest = New-Button 'Test' 20 $y 80 $height
+$btnGitTest.Add_Click({
+    $result = Test-Git $txtGit.Text
+    [System.Windows.Forms.MessageBox]::Show($result, 'Git Test')
+})
+$form.Controls.Add($btnGitTest)
+
+$btnGitSave = New-Button 'Save' (20 + 90) $y 80 $height
+$btnGitSave.Add_Click({
+    try {
+        Save-Git $txtGit.Text
+        $lblGitCurrent.Text = "Current: $($txtGit.Text)"
+        $lblGitCurrent.ForeColor = [System.Drawing.Color]::DarkGreen
+        [System.Windows.Forms.MessageBox]::Show('Папка Git сохранена.', 'Saved')
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show($_.Exception.Message, 'Error', 'OK', 'Error')
+    }
+})
+$form.Controls.Add($btnGitSave)
+
+$btnGitClear = New-Button 'Clear' (20 + 180) $y 80 $height
+$btnGitClear.Add_Click({
+    Clear-Git
+    $txtGit.Text = ''
+    $lblGitCurrent.Text = 'Current: not configured (will use built-in MSYS2 Git)'
+    $lblGitCurrent.ForeColor = [System.Drawing.Color]::Gray
+    [System.Windows.Forms.MessageBox]::Show('Git configuration cleared.', 'Cleared')
+})
+$form.Controls.Add($btnGitClear)
+$y += 55
+
+# Separator
+$sepGit = New-Object System.Windows.Forms.Label
+$sepGit.BorderStyle = 'Fixed3D'
+$sepGit.Location = New-Object System.Drawing.Point(20, $y)
+$sepGit.Size = New-Object System.Drawing.Size(560, 2)
+$form.Controls.Add($sepGit)
 $y += 20
 
 # === Java section ===

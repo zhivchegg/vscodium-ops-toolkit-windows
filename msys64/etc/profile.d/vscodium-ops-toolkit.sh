@@ -43,4 +43,4 @@ fi
 # configure-runtime.ps1 writes Python/Java overrides there.
 # No action needed here; /etc/profile.d/runtime.sh is sourced automatically.
 
-unset _vscodium_msys_root _vscodium_toolkit_root
+unset _vscodium_msys_root _vscodium_toolkit_root _vscodium_home_unix
